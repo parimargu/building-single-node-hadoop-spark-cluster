@@ -1,0 +1,108 @@
+versions:
+  java: 21
+  hadoop: 3.4.2
+  spark: 4.1.1
+  hive: 4.2.0
+  mysql: latest
+  postgres: latest
+
+ports:
+  hadoop:
+    namenode_ui: 9870
+    namenode_ipc: 9000
+    datanode_data: 9866
+    datanode_http: 9864
+    datanode_ipc: 9867
+    resourcemanager_ui: 8088
+    resourcemanager_scheduler: 8030
+    resourcemanager_tracker: 8031
+    resourcemanager_admin: 8033
+    resourcemanager_address: 8032
+    nodemanager_localizer: 8040
+    nodemanager_webapp: 8042
+    historyserver_ui: 19888
+    historyserver_address: 10020
+  spark:
+    master_ui: 8080
+    master_port: 7077
+    worker_ui: 8081
+  hive:
+    metastore: 9083
+    hiveserver2: 10000
+    hiveserver2_ui: 10002
+  monitoring:
+    api: 8000
+    ui: 3000
+
+databases:
+  mysql:
+    host: mysql
+    port: 3306
+    database: hive_metastore
+    user: hive
+    password: hivepass
+    root_password: rootpass
+  postgres:
+    host: postgres
+    port: 5432
+    database: monitoring
+    user: monitor
+    password: monitorpass
+
+services:
+  hadoop:
+    namenode:
+      container_name: namenode
+      heap_size: 1024m
+    datanode:
+      container_name: datanode
+      heap_size: 1024m
+    resourcemanager:
+      container_name: resourcemanager
+      heap_size: 1024m
+    nodemanager:
+      container_name: nodemanager
+      heap_size: 1024m
+    yarn:
+      resource:
+        memory_mb: 4096
+        cpu_vcores: 4
+      scheduler:
+        minimum_allocation_mb: 512
+        maximum_allocation_mb: 4096
+    historyserver:
+      container_name: historyserver
+      heap_size: 512m
+  spark:
+    master:
+      container_name: spark-master
+      memory: 1g
+      cores: 2
+    worker:
+      container_name: spark-worker
+      memory: 2g
+      cores: 2
+  hive:
+    execution_engine: mr
+    metastore:
+      container_name: hive-metastore
+      heap_size: 1024m
+    hiveserver2:
+      container_name: hiveserver2
+      heap_size: 1024m
+
+network:
+  name: bigdata-network
+  driver: bridge
+
+volumes:
+  hdfs_namenode: hdfs-namenode-data
+  hdfs_datanode: hdfs-datanode-data
+  hive_warehouse: hive-warehouse
+  mysql_data: mysql-data
+  postgres_data: postgres-data
+
+download_urls:
+  hadoop: "https://dlcdn.apache.org/hadoop/common/hadoop-{version}/hadoop-{version}.tar.gz"
+  spark: "https://dlcdn.apache.org/spark/spark-{version}/spark-{version}-bin-hadoop3.tgz"
+  hive: "https://dlcdn.apache.org/hive/hive-{version}/apache-hive-{version}-bin.tar.gz"

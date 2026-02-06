@@ -1,0 +1,462 @@
+# Single-Node Big Data Cluster - Docker Compose
+# All versions and ports are configurable via build args and environment variables
+
+services:
+  #=============================================================================
+  # Databases
+  #=============================================================================
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    hostname: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: hive_metastore
+      MYSQL_USER: hive
+      MYSQL_PASSWORD: hivepass
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    networks:
+      - bigdata-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_DB: monitoring
+      POSTGRES_USER: monitor
+      POSTGRES_PASSWORD: monitorpass
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - bigdata-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U monitor -d monitoring" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  #=============================================================================
+  # Hadoop Services
+  #=============================================================================
+
+  namenode:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+      target: namenode
+      args:
+        JAVA_VERSION: 21
+        HADOOP_VERSION: 3.4.2
+    container_name: namenode
+    hostname: namenode
+    environment:
+      SERVICE_ROLE: namenode
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      NAMENODE_UI_PORT: 9870
+      RM_HOST: resourcemanager
+      HS_HOST: historyserver
+    volumes:
+      - hdfs-namenode-data:/opt/hadoop/data/namenode
+      - hadoop-tmp:/opt/hadoop/tmp
+      - hadoop-logs:/opt/hadoop/logs
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    networks:
+      - bigdata-network
+    restart: unless-stopped
+
+  datanode:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+      target: datanode
+      args:
+        JAVA_VERSION: 21
+        HADOOP_VERSION: 3.4.2
+    container_name: datanode
+    hostname: datanode
+    environment:
+      SERVICE_ROLE: datanode
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      RM_HOST: resourcemanager
+      DATANODE_HTTP_PORT: 9864
+    volumes:
+      - hdfs-datanode-data:/opt/hadoop/data/datanode
+      - hadoop-tmp:/opt/hadoop/tmp
+      - hadoop-logs:/opt/hadoop/logs
+    ports:
+      - "9866:9866"
+      - "9864:9864"
+    networks:
+      - bigdata-network
+    depends_on:
+      namenode:
+        condition: service_started
+    restart: unless-stopped
+
+  resourcemanager:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+      target: resourcemanager
+      args:
+        JAVA_VERSION: 21
+        HADOOP_VERSION: 3.4.2
+    container_name: resourcemanager
+    hostname: resourcemanager
+    environment:
+      SERVICE_ROLE: resourcemanager
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      RM_HOST: resourcemanager
+      RM_UI_PORT: 8088
+      HS_HOST: historyserver
+      YARN_NM_MEMORY_MB: 4096
+      YARN_NM_CPU_VCORES: 4
+      YARN_SCHED_MIN_ALLOC_MB: 512
+      YARN_SCHED_MAX_ALLOC_MB: 4096
+    volumes:
+      - hadoop-tmp:/opt/hadoop/tmp
+      - hadoop-logs:/opt/hadoop/logs
+    ports:
+      - "8088:8088"
+      - "8032:8032"
+    networks:
+      - bigdata-network
+    depends_on:
+      namenode:
+        condition: service_started
+    restart: unless-stopped
+
+  nodemanager:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+      target: nodemanager
+      args:
+        JAVA_VERSION: 21
+        HADOOP_VERSION: 3.4.2
+    container_name: nodemanager
+    hostname: nodemanager
+    environment:
+      SERVICE_ROLE: nodemanager
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      RM_HOST: resourcemanager
+      RM_ADDRESS_PORT: 8032
+      YARN_NM_MEMORY_MB: 4096
+      YARN_NM_CPU_VCORES: 4
+      YARN_SCHED_MIN_ALLOC_MB: 512
+      YARN_SCHED_MAX_ALLOC_MB: 4096
+    volumes:
+      - nodemanager-local:/opt/hadoop/data/nodemanager/local
+      - nodemanager-logs:/opt/hadoop/data/nodemanager/logs
+      - hadoop-tmp:/opt/hadoop/tmp
+      - hadoop-logs:/opt/hadoop/logs
+    ports:
+      - "8042:8042"
+    networks:
+      - bigdata-network
+    depends_on:
+      resourcemanager:
+        condition: service_started
+    restart: unless-stopped
+
+  historyserver:
+    build:
+      context: ./docker/hadoop
+      dockerfile: Dockerfile
+      target: historyserver
+      args:
+        JAVA_VERSION: 21
+        HADOOP_VERSION: 3.4.2
+    container_name: historyserver
+    hostname: historyserver
+    environment:
+      SERVICE_ROLE: historyserver
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      RM_HOST: resourcemanager
+      HS_HOST: historyserver
+      HS_UI_PORT: 19888
+      HS_ADDRESS_PORT: 10020
+    volumes:
+      - hadoop-tmp:/opt/hadoop/tmp
+      - hadoop-logs:/opt/hadoop/logs
+    ports:
+      - "19888:19888"
+      - "10020:10020"
+    networks:
+      - bigdata-network
+    depends_on:
+      namenode:
+        condition: service_started
+    restart: unless-stopped
+
+  #=============================================================================
+  # Spark Services
+  #=============================================================================
+
+  spark-master:
+    build:
+      context: ./docker/spark
+      dockerfile: Dockerfile
+      target: spark-master
+      args:
+        JAVA_VERSION: 21
+        SPARK_VERSION: 4.1.1
+        HADOOP_VERSION: 3.4.2
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      SERVICE_ROLE: spark-master
+      SPARK_MODE: master
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      SPARK_MASTER_HOST: spark-master
+      SPARK_MASTER_PORT: 7077
+      SPARK_MASTER_UI_PORT: 8080
+      HIVE_METASTORE_HOST: hive-metastore
+      HIVE_METASTORE_PORT: 9083
+      RM_HOST: resourcemanager
+      RM_ADDRESS_PORT: 8032
+      SPARK_DRIVER_MEMORY: 1g
+      SPARK_EXECUTOR_MEMORY: 2g
+      SPARK_EXECUTOR_CORES: 2
+    volumes:
+      - spark-logs:/opt/spark/logs
+      - spark-work:/opt/spark/work
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      - bigdata-network
+    depends_on:
+      namenode:
+        condition: service_started
+    restart: unless-stopped
+
+  spark-worker:
+    build:
+      context: ./docker/spark
+      dockerfile: Dockerfile
+      target: spark-worker
+      args:
+        JAVA_VERSION: 21
+        SPARK_VERSION: 4.1.1
+        HADOOP_VERSION: 3.4.2
+    container_name: spark-worker
+    hostname: spark-worker
+    environment:
+      SERVICE_ROLE: spark-worker
+      SPARK_MODE: worker
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      SPARK_MASTER_HOST: spark-master
+      SPARK_MASTER_PORT: 7077
+      SPARK_WORKER_UI_PORT: 8081
+      SPARK_WORKER_MEMORY: 2g
+      SPARK_WORKER_CORES: 2
+      HIVE_METASTORE_HOST: hive-metastore
+      HIVE_METASTORE_PORT: 9083
+      RM_HOST: resourcemanager
+      RM_ADDRESS_PORT: 8032
+    volumes:
+      - spark-logs:/opt/spark/logs
+      - spark-work:/opt/spark/work
+    ports:
+      - "8081:8081"
+    networks:
+      - bigdata-network
+    depends_on:
+      spark-master:
+        condition: service_started
+    restart: unless-stopped
+
+  #=============================================================================
+  # Hive Services
+  #=============================================================================
+
+  hive-metastore:
+    build:
+      context: ./docker/hive
+      dockerfile: Dockerfile
+      target: hive-metastore
+      args:
+        JAVA_VERSION: 21
+        HIVE_VERSION: 4.2.0
+        HADOOP_VERSION: 3.4.2
+    container_name: hive-metastore
+    hostname: hive-metastore
+    environment:
+      SERVICE_ROLE: hive-metastore
+      HIVE_MODE: metastore
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: hive_metastore
+      MYSQL_USER: hive
+      MYSQL_PASSWORD: hivepass
+      HIVE_METASTORE_HOST: hive-metastore
+      HIVE_METASTORE_PORT: 9083
+      HIVE_EXECUTION_ENGINE: mr
+    volumes:
+      - hive-warehouse:/user/hive/warehouse
+      - hive-logs:/opt/hive/logs
+    ports:
+      - "9083:9083"
+    networks:
+      - bigdata-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      namenode:
+        condition: service_started
+    restart: unless-stopped
+
+  hiveserver2:
+    build:
+      context: ./docker/hive
+      dockerfile: Dockerfile
+      target: hiveserver2
+      args:
+        JAVA_VERSION: 21
+        HIVE_VERSION: 4.2.0
+        HADOOP_VERSION: 3.4.2
+    container_name: hiveserver2
+    hostname: hiveserver2
+    environment:
+      SERVICE_ROLE: hiveserver2
+      HIVE_MODE: hiveserver2
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: hive_metastore
+      MYSQL_USER: hive
+      MYSQL_PASSWORD: hivepass
+      HIVE_METASTORE_HOST: hive-metastore
+      HIVE_METASTORE_PORT: 9083
+      HIVESERVER2_PORT: 10000
+      HIVESERVER2_UI_PORT: 10002
+      HIVE_EXECUTION_ENGINE: mr
+    volumes:
+      - hive-warehouse:/user/hive/warehouse
+      - hive-logs:/opt/hive/logs
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+    networks:
+      - bigdata-network
+    depends_on:
+      hive-metastore:
+        condition: service_started
+    restart: unless-stopped
+
+  #=============================================================================
+  # Monitoring Services
+  #=============================================================================
+
+  monitoring-api:
+    build:
+      context: ./monitoring/backend
+      dockerfile: Dockerfile
+    container_name: monitoring-api
+    hostname: monitoring-api
+    environment:
+      DATABASE_URL: postgresql://monitor:monitorpass@postgres:5432/monitoring
+      DOCKER_HOST: unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "8000:8000"
+    networks:
+      - bigdata-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  monitoring-ui:
+    build:
+      context: ./monitoring/frontend
+      dockerfile: Dockerfile
+    container_name: monitoring-ui
+    hostname: monitoring-ui
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+    ports:
+      - "3000:80"
+    networks:
+      - bigdata-network
+    depends_on:
+      - monitoring-api
+    restart: unless-stopped
+
+#=============================================================================
+# Networks
+#=============================================================================
+
+networks:
+  bigdata-network:
+    driver: bridge
+    name: bigdata-network
+
+#=============================================================================
+# Volumes
+#=============================================================================
+
+volumes:
+  # Hadoop volumes
+  hdfs-namenode-data:
+    name: hdfs-namenode-data
+  hdfs-datanode-data:
+    name: hdfs-datanode-data
+  hadoop-tmp:
+    name: hadoop-tmp
+  hadoop-logs:
+    name: hadoop-logs
+  nodemanager-local:
+    name: nodemanager-local
+  nodemanager-logs:
+    name: nodemanager-logs
+
+  # Spark volumes
+  spark-logs:
+    name: spark-logs
+  spark-work:
+    name: spark-work
+
+  # Hive volumes
+  hive-warehouse:
+    name: hive-warehouse
+  hive-logs:
+    name: hive-logs
+
+  # Database volumes
+  mysql-data:
+    name: mysql-data
+  postgres-data:
+    name: postgres-data

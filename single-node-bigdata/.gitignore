@@ -1,0 +1,37 @@
+# Ignore node_modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Docker
+.docker/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated configs
+generated-configs/

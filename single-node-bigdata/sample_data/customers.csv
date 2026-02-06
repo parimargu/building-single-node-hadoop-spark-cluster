@@ -1,0 +1,101 @@
+customer_id,name,email,city
+1,Customer_1,customer_1@example.com,Phoenix
+2,Customer_2,customer_2@example.com,Houston
+3,Customer_3,customer_3@example.com,Los Angeles
+4,Customer_4,customer_4@example.com,New York
+5,Customer_5,customer_5@example.com,Los Angeles
+6,Customer_6,customer_6@example.com,New York
+7,Customer_7,customer_7@example.com,New York
+8,Customer_8,customer_8@example.com,Phoenix
+9,Customer_9,customer_9@example.com,New York
+10,Customer_10,customer_10@example.com,Los Angeles
+11,Customer_11,customer_11@example.com,New York
+12,Customer_12,customer_12@example.com,Houston
+13,Customer_13,customer_13@example.com,Los Angeles
+14,Customer_14,customer_14@example.com,New York
+15,Customer_15,customer_15@example.com,Phoenix
+16,Customer_16,customer_16@example.com,Houston
+17,Customer_17,customer_17@example.com,Chicago
+18,Customer_18,customer_18@example.com,Chicago
+19,Customer_19,customer_19@example.com,New York
+20,Customer_20,customer_20@example.com,Los Angeles
+21,Customer_21,customer_21@example.com,Los Angeles
+22,Customer_22,customer_22@example.com,Phoenix
+23,Customer_23,customer_23@example.com,Phoenix
+24,Customer_24,customer_24@example.com,Phoenix
+25,Customer_25,customer_25@example.com,Houston
+26,Customer_26,customer_26@example.com,Chicago
+27,Customer_27,customer_27@example.com,Houston
+28,Customer_28,customer_28@example.com,Phoenix
+29,Customer_29,customer_29@example.com,Chicago
+30,Customer_30,customer_30@example.com,Chicago
+31,Customer_31,customer_31@example.com,Los Angeles
+32,Customer_32,customer_32@example.com,Los Angeles
+33,Customer_33,customer_33@example.com,Chicago
+34,Customer_34,customer_34@example.com,Phoenix
+35,Customer_35,customer_35@example.com,Chicago
+36,Customer_36,customer_36@example.com,Houston
+37,Customer_37,customer_37@example.com,Phoenix
+38,Customer_38,customer_38@example.com,Phoenix
+39,Customer_39,customer_39@example.com,Phoenix
+40,Customer_40,customer_40@example.com,Chicago
+41,Customer_41,customer_41@example.com,Los Angeles
+42,Customer_42,customer_42@example.com,New York
+43,Customer_43,customer_43@example.com,Chicago
+44,Customer_44,customer_44@example.com,Phoenix
+45,Customer_45,customer_45@example.com,Los Angeles
+46,Customer_46,customer_46@example.com,Los Angeles
+47,Customer_47,customer_47@example.com,Phoenix
+48,Customer_48,customer_48@example.com,Los Angeles
+49,Customer_49,customer_49@example.com,Houston
+50,Customer_50,customer_50@example.com,Los Angeles
+51,Customer_51,customer_51@example.com,Phoenix
+52,Customer_52,customer_52@example.com,Chicago
+53,Customer_53,customer_53@example.com,Chicago
+54,Customer_54,customer_54@example.com,New York
+55,Customer_55,customer_55@example.com,Los Angeles
+56,Customer_56,customer_56@example.com,Chicago
+57,Customer_57,customer_57@example.com,Los Angeles
+58,Customer_58,customer_58@example.com,Houston
+59,Customer_59,customer_59@example.com,Houston
+60,Customer_60,customer_60@example.com,New York
+61,Customer_61,customer_61@example.com,Los Angeles
+62,Customer_62,customer_62@example.com,Los Angeles
+63,Customer_63,customer_63@example.com,Houston
+64,Customer_64,customer_64@example.com,Los Angeles
+65,Customer_65,customer_65@example.com,Phoenix
+66,Customer_66,customer_66@example.com,Houston
+67,Customer_67,customer_67@example.com,Houston
+68,Customer_68,customer_68@example.com,New York
+69,Customer_69,customer_69@example.com,Los Angeles
+70,Customer_70,customer_70@example.com,Los Angeles
+71,Customer_71,customer_71@example.com,New York
+72,Customer_72,customer_72@example.com,New York
+73,Customer_73,customer_73@example.com,Phoenix
+74,Customer_74,customer_74@example.com,Phoenix
+75,Customer_75,customer_75@example.com,New York
+76,Customer_76,customer_76@example.com,Los Angeles
+77,Customer_77,customer_77@example.com,Phoenix
+78,Customer_78,customer_78@example.com,Houston
+79,Customer_79,customer_79@example.com,Houston
+80,Customer_80,customer_80@example.com,Chicago
+81,Customer_81,customer_81@example.com,Houston
+82,Customer_82,customer_82@example.com,Phoenix
+83,Customer_83,customer_83@example.com,Chicago
+84,Customer_84,customer_84@example.com,Houston
+85,Customer_85,customer_85@example.com,Los Angeles
+86,Customer_86,customer_86@example.com,Houston
+87,Customer_87,customer_87@example.com,Houston
+88,Customer_88,customer_88@example.com,Phoenix
+89,Customer_89,customer_89@example.com,Los Angeles
+90,Customer_90,customer_90@example.com,Phoenix
+91,Customer_91,customer_91@example.com,Los Angeles
+92,Customer_92,customer_92@example.com,Chicago
+93,Customer_93,customer_93@example.com,Chicago
+94,Customer_94,customer_94@example.com,Los Angeles
+95,Customer_95,customer_95@example.com,Houston
+96,Customer_96,customer_96@example.com,Chicago
+97,Customer_97,customer_97@example.com,New York
+98,Customer_98,customer_98@example.com,Phoenix
+99,Customer_99,customer_99@example.com,Los Angeles
+100,Customer_100,customer_100@example.com,New York
