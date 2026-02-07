@@ -1,0 +1,1 @@
+from pyspark.sql import SparkSession; spark = SparkSession.builder.enableHiveSupport().getOrCreate(); spark.sql('CREATE TABLE IF NOT EXISTS jupyter_verify (id INT)'); spark.sql('INSERT INTO jupyter_verify VALUES (100)'); print('SUCCESS_HIVE:'); spark.sql('SELECT * FROM jupyter_verify').show(); spark.stop()

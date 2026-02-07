@@ -33,6 +33,8 @@ ports:
   monitoring:
     api: 8000
     ui: 3000
+  jupyter:
+    port: 8888
 
 databases:
   mysql:
@@ -90,6 +92,9 @@ services:
     hiveserver2:
       container_name: hiveserver2
       heap_size: 1024m
+  jupyter:
+    container_name: jupyter
+    python_version: "3.10"
 
 network:
   name: bigdata-network

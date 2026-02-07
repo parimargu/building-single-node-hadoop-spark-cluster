@@ -415,6 +415,45 @@ services:
       - monitoring-api
     restart: unless-stopped
 
+  #=============================================================================
+  # Data Science Services
+  #=============================================================================
+
+  jupyter:
+    build:
+      context: ./docker/jupyter
+      dockerfile: Dockerfile
+      args:
+        JAVA_VERSION: 21
+        HADOOP_VERSION: 3.4.2
+        SPARK_VERSION: 4.1.1
+        HIVE_VERSION: 4.2.0
+    container_name: jupyter
+    hostname: jupyter
+    environment:
+      NAMENODE_HOST: namenode
+      NAMENODE_IPC_PORT: 9000
+      RM_HOST: resourcemanager
+      RM_ADDRESS_PORT: 8032
+      SPARK_MASTER_HOST: spark-master
+      SPARK_MASTER_PORT: 7077
+      HIVE_METASTORE_HOST: hive-metastore
+      HIVE_METASTORE_PORT: 9083
+    volumes:
+      - ./notebooks:/opt/jupyter/notebooks
+      - hadoop-logs:/opt/hadoop/logs
+      - spark-logs:/opt/spark/logs
+    ports:
+      - "8888:8888"
+    networks:
+      - bigdata-network
+    depends_on:
+      spark-master:
+        condition: service_started
+      hiveserver2:
+        condition: service_started
+    restart: unless-stopped
+
 #=============================================================================
 # Networks
 #=============================================================================

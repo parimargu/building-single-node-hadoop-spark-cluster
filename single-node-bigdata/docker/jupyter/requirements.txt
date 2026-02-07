@@ -1,0 +1,38 @@
+# Core Data Science
+numpy
+pandas
+matplotlib
+seaborn
+scipy
+scikit-learn
+
+# Jupyter
+jupyterlab
+notebook
+ipywidgets
+
+# Spark Integration
+pyspark==4.1.1
+
+# Machine Learning & Deep Learning
+torch
+torchvision
+torchaudio
+tensorflow
+keras
+
+# NLP
+nltk
+spacy
+gensim
+
+# Others
+findspark
+pyhive
+thrift
+thrift-sasl
+requests
+beautifulsoup4
+lxml
+plotly
+bokeh

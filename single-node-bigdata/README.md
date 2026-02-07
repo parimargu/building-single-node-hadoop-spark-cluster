@@ -64,6 +64,7 @@ docker compose ps
 | **Hadoop NameNode** | http://localhost:9870 | HDFS overview |
 | **YARN ResourceManager** | http://localhost:8088 | Job management |
 | **Spark Master** | http://localhost:8080 | Spark cluster status |
+| **Jupyter Lab** | http://localhost:8888 | Data science workspace |
 | **Hive Web UI** | http://localhost:10002 | Hive web interface |
 | **History Server** | http://localhost:19888 | Job history |
 
@@ -137,6 +138,111 @@ docker exec -it spark-master pyspark
 
 # Submit job
 docker exec spark-master spark-submit --master spark://spark-master:7077 your-app.jar
+```
+
+## Jupyter Lab (Data Science)
+
+The cluster includes a fully-featured Jupyter Lab service for interactive data science, machine learning, and NLP work. It is pre-integrated with all cluster components.
+
+### 1. Access Jupyter Lab
+
+Navigate to [http://localhost:8888](http://localhost:8888) in your browser. No token or password is required.
+
+### 2. HDFS Integration
+
+You can interact with HDFS directly from a Jupyter notebook using either subprocess calls for CLI commands or through the `pyspark` API.
+
+**List HDFS files from a notebook cell:**
+```python
+import subprocess
+print(subprocess.check_output(["hdfs", "dfs", "-ls", "/"]).decode("utf-8"))
+```
+
+### 3. Spark Integration Modes
+
+Jupyter is configured to support both Spark Standalone and YARN cluster managers.
+
+#### A. Spark Standalone Mode
+Use this for faster startup times and direct interaction with the Spark Master.
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .appName("JupyterStandalone") \
+    .master("spark://spark-master:7077") \
+    .config("spark.executor.memory", "1g") \
+    .enableHiveSupport() \
+    .getOrCreate()
+
+print(spark.range(10).count())
+spark.stop()
+```
+
+#### B. YARN Cluster Mode
+Use this to leverage YARN's resource management.
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .appName("JupyterYARN") \
+    .master("yarn") \
+    .config("spark.executor.memory", "512m") \
+    .enableHiveSupport() \
+    .getOrCreate()
+
+print(spark.range(10).count())
+spark.stop()
+```
+
+### 4. Hive Integration
+
+Jupyter has direct access to the Hive Metastore. You can query Hive tables using Spark SQL.
+
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .appName("JiveIntegration") \
+    .master("yarn") \
+    .enableHiveSupport() \
+    .getOrCreate()
+
+# Create and query Hive tables
+spark.sql("CREATE TABLE IF NOT EXISTS jupyter_hive_demo (id INT, value STRING)")
+spark.sql("INSERT INTO jupyter_hive_demo VALUES (1, 'Integrated with Jupyter')")
+spark.sql("SELECT * FROM jupyter_hive_demo").show()
+
+# Read from HDFS and write to Hive
+# df = spark.read.csv("hdfs:///data/customers.csv", header=True)
+# df.write.mode("overwrite").saveAsTable("hive_customers")
+
+spark.stop()
+```
+
+### 5. Machine Learning & Deep Learning
+
+The environment includes PyTorch, TensorFlow, and standard data science libraries:
+
+```python
+import torch
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+import sklearn
+
+print(f"PyTorch: {torch.__version__}")
+print(f"TensorFlow: {tf.__version__}")
+```
+
+### 6. NLP Support
+
+Built-in support for NLTK and Spacy:
+
+```python
+import nltk
+import spacy
+# nltk.download('punkt') # Example download
+# nlp = spacy.load("en_core_web_sm")
 ```
 
 ## Stop the Cluster
